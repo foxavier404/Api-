@@ -1,0 +1,56 @@
+version: '3.4'
+
+services:
+  projetfastdockermongo:
+    image: projetfastdockermongo
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8000:8000
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: your_root_password
+      MONGO_INITDB_DATABASE: your_database_name
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data_container:/data/db
+
+  fastapi:
+    build: .
+    container_name: fastapi
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/app
+    environment:
+      - MONGODB_USER=root
+      - MONGODB_PASSWORD=your_root_password
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=your_database_name
+      - JWT_SECRET=your_jwt_secret
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../conf/conf.d:/etc/nginx/conf.d
+      - ../conf/ssl:/etc/nginx/ssl
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - fastapi
+    command: "/bin/bash -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+volumes:
+  mongodb_data_container:
+  certbot-etc:
+  certbot-var:
