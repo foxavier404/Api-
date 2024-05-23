@@ -4,7 +4,7 @@ services:
   projetfastdockermongo:
     image: projetfastdockermongo
     build:
-      context: .
+      context: ../../src
       dockerfile: ./Dockerfile
     ports:
       - 8000:8000
@@ -14,25 +14,25 @@ services:
     container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: your_root_password
-      MONGO_INITDB_DATABASE: your_database_name
+      MONGO_INITDB_ROOT_PASSWORD: example 
+      MONGO_INITDB_DATABASE: some-mongo
     ports:
       - '27017:27017'
     volumes:
       - mongodb_data_container:/data/db
 
   fastapi:
-    build: .
+    build: ../../src
     container_name: fastapi
     command: uvicorn main:app --host 0.0.0.0 --port 8000
     volumes:
       - .:/app
     environment:
       - MONGODB_USER=root
-      - MONGODB_PASSWORD=your_root_password
+      - MONGODB_PASSWORD=example 
       - MONGODB_HOST=mongodb
       - MONGODB_PORT=27017
-      - MONGODB_DATABASE=your_database_name
+      - MONGODB_DATABASE=some-mongo
       - JWT_SECRET=your_jwt_secret
 
   nginx:
